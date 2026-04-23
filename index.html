@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0058)file:///C:/Users/claud/Downloads/ordinazioni_ryugin_7.html -->
-<html lang="it"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="it">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🥢 Ryu Gin — Ordinazioni</title>
-<link href="./🥢 Ryu Gin — Ordinazioni_files/css2" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --red:#c0392b; --red-dark:#922b21; --gold:#d4a017;
@@ -119,19 +119,32 @@
   .toast.show{transform:translateX(-50%) translateY(0);}
 
   @media print{
+    *{background:white!important;color:black!important;box-shadow:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     body{background:white!important;}
     .header,.tabs,.status-bar{display:none!important;}
-    .main{background:white;}
+    .main{background:white!important;}
     #tab-menu,#tab-order{display:none!important;}
     #tab-summary{display:block!important;}
-    .stopbtns{display:none;}
-    .pcard{break-inside:avoid;box-shadow:none;border:1.5pt solid #bbb;border-radius:0;margin-bottom:8pt;}
-    .pch{background:#111!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .pcn{color:#d4a017!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .oinum{color:#c0392b!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .oiqty{background:#c0392b!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .tcard{background:#111!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:0;break-inside:avoid;}
-    .grand{background:#c0392b!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .stopbtns{display:none!important;}
+    /* Nascondi i dettagli per persona, mostra solo i totali */
+    .pcard{display:none!important;}
+    .tcard{display:block!important;background:white!important;border:none!important;border-radius:0;break-inside:avoid;}
+    .ttitle{font-family:serif;font-size:13pt;font-weight:bold;color:black!important;border-bottom:1.5pt solid black;padding-bottom:4pt;margin-bottom:10pt;}
+    /* 2 colonne per i piatti */
+    #sumContent .tcard > div:not(.grand):not(.ttitle){
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0 24pt;
+    }
+    .ti-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24pt;}
+    .ti{display:flex;justify-content:space-between;padding:4pt 0;border-bottom:0.5pt solid #ccc!important;font-size:11pt;}
+    .tinum{font-weight:bold;color:black!important;min-width:50pt;}
+    .tiqty{font-weight:bold;color:black!important;background:none!important;padding:0;border-radius:0;}
+    /* Totale generale */
+    .grand{background:white!important;border:2pt solid black!important;border-radius:0;padding:10pt 14pt;margin-top:14pt;display:flex;justify-content:space-between;align-items:center;}
+    .glbl{font-size:11pt;font-weight:bold;color:black!important;text-transform:uppercase;letter-spacing:.05em;}
+    .gsub{font-size:9pt;color:#555!important;}
+    .gnum{font-size:20pt;font-weight:bold;color:black!important;}
     .summary-panel{padding:0;}
     .print-hdr{display:block!important;}
     @page{margin:1.5cm;size:A4;}
@@ -149,14 +162,14 @@
 </div>
 
 <div class="status-bar">
-  <span class="sdot ok" id="sdot"></span>
-  <span id="stxt">Connesso ✓</span>
+  <span class="sdot" id="sdot"></span>
+  <span id="stxt">Connessione in corso...</span>
 </div>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="showTab(&#39;menu&#39;,this)">📋 Menù</button>
-  <button class="tab-btn" onclick="showTab(&#39;order&#39;,this)">✏️ Ordina</button>
-  <button class="tab-btn" onclick="showTab(&#39;summary&#39;,this)">📊 Riepilogo</button>
+  <button class="tab-btn active" onclick="showTab('menu',this)">📋 Menù</button>
+  <button class="tab-btn" onclick="showTab('order',this)">✏️ Ordina</button>
+  <button class="tab-btn" onclick="showTab('summary',this)">📊 Riepilogo</button>
 </div>
 
 <div class="main">
@@ -179,7 +192,8 @@
         <div class="blabel">👤 Chi sei?</div>
         <div class="ptags" id="ptags"></div>
         <div class="add-row">
-          <input type="text" id="newName" placeholder="Scrivi il tuo nome..." maxlength="30" onkeydown="if(event.key===&#39;Enter&#39;)addP()">
+          <input type="text" id="newName" placeholder="Scrivi il tuo nome..." maxlength="30"
+            onkeydown="if(event.key==='Enter')addP()">
           <button onclick="addP()">＋ Aggiungi</button>
         </div>
       </div>
@@ -408,7 +422,7 @@ function renderSummary(orders) {
   conf.forEach(p => orders[p].forEach(i => { tm[i.num]=(tm[i.num]||0)+i.qty; }));
   const sk = Object.keys(tm).sort((a,b)=>(parseInt(a)||0)-(parseInt(b)||0));
   const grand = Object.values(tm).reduce((s,v)=>s+v,0);
-  html += `<div class="tcard"><div class="ttitle">📋 Totale cumulativo per piatto</div>${sk.map(n=>`<div class="ti"><span class="tinum">#${n}</span><span style="flex:1"></span><span class="tiqty">${tm[n]}</span></div>`).join('')}<div class="grand"><div><div class="glbl">Totale portate</div><div class="gsub">${conf.length} person${conf.length===1?'a':'e'}</div></div><div class="gnum">${grand}</div></div></div>`;
+  html += `<div class="tcard"><div class="ttitle">📋 Totale cumulativo per piatto</div><div class="ti-grid">${sk.map(n=>`<div class="ti"><span class="tinum">#${n}</span><span style="flex:1"></span><span class="tiqty">${tm[n]}</span></div>`).join('')}</div><div class="grand"><div><div class="glbl">Totale portate</div><div class="gsub">${conf.length} person${conf.length===1?'a':'e'}</div></div><div class="gnum">${grand}</div></div></div>`;
   el.innerHTML = html;
 }
 
@@ -453,6 +467,5 @@ function toast(msg,err=false){const t=document.getElementById('toast');t.textCon
 // ══════════════════════════════════════════════
 loadData(function() { renderTags(); });
 </script>
-
-
-</body></html>
+</body>
+</html>
