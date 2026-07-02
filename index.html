@@ -105,7 +105,8 @@
   .ti{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #222;}
   .ti:last-child{border-bottom:none;}
   .tinum{font-family:'Space Mono',monospace;font-weight:700;color:var(--gold);min-width:50px;}
-  .tiqty{font-family:'Space Mono',monospace;font-weight:700;color:var(--gold);background:#1c1c1c;padding:3px 13px;border-radius:20px;}
+  .oiname{flex:1;font-size:.8rem;color:var(--muted);padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tiname{flex:1;font-size:.8rem;color:#aaa;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .grand{background:var(--red);border-radius:10px;padding:15px 20px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;}
   .glbl{font-family:'Space Mono',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.75);}
   .gsub{font-size:.7rem;color:rgba(255,255,255,.55);margin-top:3px;}
@@ -138,7 +139,8 @@
     }
     .ti-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24pt;}
     .ti{display:flex;justify-content:space-between;padding:4pt 0;border-bottom:0.5pt solid #ccc!important;font-size:11pt;}
-    .tinum{font-weight:bold;color:black!important;min-width:50pt;}
+    .tinum{font-weight:bold;color:black!important;min-width:36pt;}
+    .tiname{font-size:9pt;color:#333!important;flex:1;padding:0 6pt;}
     .tiqty{font-weight:bold;color:black!important;background:none!important;padding:0;border-radius:0;}
     /* Totale generale */
     .grand{background:white!important;border:2pt solid black!important;border-radius:0;padding:10pt 14pt;margin-top:14pt;display:flex;justify-content:space-between;align-items:center;}
@@ -148,6 +150,9 @@
     .summary-panel{padding:0;}
     .print-hdr{display:block!important;}
     @page{margin:1.5cm;size:A4;}
+    #tab-summary{zoom:1;}
+    .tcard{font-size:clamp(7pt,1.8vw,11pt);}
+    .summary-panel{max-height:100%;overflow:visible;}
   }
   .print-hdr{display:none;text-align:center;margin-bottom:14pt;border-bottom:2pt solid #c0392b;padding-bottom:10pt;}
   .print-hdr h1{font-family:serif;font-size:20pt;color:#c0392b;}
@@ -238,8 +243,62 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxIwmYoXGMDMsByHfID7B5O0ZzrTZrtj2zH-iMNF4zO-vdlbwGdjOnwgDsevans2kMC/exec';
 
 // ══════════════════════════════════════════════
-// STATO
+// DIZIONARIO PIATTI
 // ══════════════════════════════════════════════
+const MENU = {
+  "1":"EDAMAME","2":"HARUMAKI","3":"INVOLTINO PRIMAVERA","4":"EBI STICK",
+  "5":"GOMEWAKAME","6":"GYOZA","7":"SHAOMAI","8":"VEGE GYOZA",
+  "10":"TARTAR DI SALMONE","12":"SALMONE SU","13":"TAKO SU","14":"EBI SU",
+  "16":"TOFU FRESCO","17":"TOFU FRITTO","18":"PANE CINESE",
+  "19":"CROCCHETTA DI PATATE CON MAIS","20":"ONIGHIRI BIANCO","21":"ONIGHIRI BLACK",
+  "22":"PATATINE FRITTE","23":"NUVOLE DI DRAGO","25":"INSALATA CON PESCE MISTO",
+  "26":"INSALATA CON SALMONE","27":"INSALATA CON GAMBERI","28":"INSALATA CON MAIS E CAROTE",
+  "29":"ZUPPA DI MISO","30":"ZUPPA DI POLLO E MAIS","31":"ZUPPA AGRO PICCANTE",
+  "32":"ZUPPA DI MARE","33":"SAKE nighiri","34":"MAGURO nighiri","35":"SUZUKI nighiri",
+  "37":"EBITEN nighiri","38":"SALMONE FLAMBÉ nighiri","39":"SALMONE MANDORLE nighiri",
+  "42":"EBI nighiri","43":"SASHIMI DI SALMONE","47":"SUSHI E SASHIMI MISTO",
+  "48":"SUSHI MISTO PICCOLO","49":"SUSHI MISTO MEDIO","50":"BARCA PER 1",
+  "51":"BARCA PER 2","52":"BARCA PER 3","53":"BARCA PER 4",
+  "54":"GUNKAN SALMONE","56":"GUNKAN PHILADELPHIA","57":"GUNKAN AMAΕΒΙ",
+  "60":"GUNKAN FLAMBÉ","61":"GUNKAN TOBICO","64":"TEMAKI SAKE","65":"TEMAKI TUNA",
+  "67":"TEMAKI SALMONE PICCANTE","68":"TEMAKI TONNO PICCANTE","69":"TEMAKI EBITEN",
+  "70":"TEMAKI SOIA EBITEN","71":"TEMAKI SOIA TONNO COTTO","72":"TEMAKI SOIA MIURA MANDORLE",
+  "73":"SAKE HOSOMAKI","74":"HOSOMAKI TEKA","75":"AVOCADO HOSOMAKI",
+  "76":"HOSOMAKI KAPA","77":"HOSOMAKI EBITEN","78":"HOSOMAKI SOIA MANGO",
+  "79":"HOSOMAKI AVOCADO","80":"HOSOMAKI FRITTO","81":"HOSOMAKI SPICY SALMON",
+  "82":"HOSOMAKI MANGO","83":"HOSOMAKI FRAGOLA","84":"URA. CALIFORNIA",
+  "85":"URA. SALMONE E AVOCADO","86":"URA. TONNO E AVOCADO","87":"URA. SALMONE PICCANTE",
+  "88":"URA. TONNO PICCANTE","89":"URA. PHILADELPHIA","90":"URA. PHILADELPHIA FRITTO",
+  "91":"URA. FRESH SALMON","92":"URA. MIURA","93":"URA. TONNO COTTO",
+  "94":"URA. EBITEN","95":"URA. TEMPURA","96":"EBITEN SPECIALE","98":"URA. VEGETARIANO",
+  "100":"TIGER ROLL","102":"DOLCE ROLL","104":"IBIZA ROLL","110":"RYUGIN BLACK",
+  "111":"CHEESE BLACK","112":"EBITEN BLACK","113":"MIURA BLACK","114":"MIURA MANDORLE",
+  "116":"TIGER FLAMBÉ","117":"VEGANO VENERE","119":"TIGER VENERE",
+  "121":"FUTO. CALIFORNIA","122":"FUTO. EBITEN","123":"FUTO. FRITTO","124":"FUTO. AGEMAKI",
+  "125":"CARPACCIO DI SALMONE","131":"SALMONE TATAKI","135":"SALMONE CHIRASHI",
+  "136":"CHIRASHI MISTO","137":"CHIRASHI MISTO FLAMBÉ","138":"POKE VENERE",
+  "139":"POKE SALMONE","140":"GOHAN","141":"RISO ALLA CANTONESE","142":"RISO PECHINESE",
+  "143":"RISO CON POLLO","144":"RISO CON GAMBERI E VERDURE","145":"RISO CON SALMONE E VERDURE",
+  "146":"RISO CON VERDURE","147":"YAKI UDON PICCANTE POLLO","148":"YAKI UDON GAMBERI",
+  "149":"YAKI SOBA GAMBERI","150":"SPAGHETTI SOIA PICCANTE MAIALE","151":"SPAGHETTI SOIA GAMBERI",
+  "152":"SPAGHETTI RISO GAMBERI","153":"SPAGHETTI RISO MANZO","154":"GNOCCHI RISO GAMBERI",
+  "155":"SPAGHETTI AL POMODORO","156":"SPAGHETTI POMODORO GAMBERI",
+  "157":"PASTA BIANCA OLIO E GRANO","158":"TEMPURA UDON","159":"NABE UDON",
+  "162":"SPIEDINI DI GAMBERI","163":"SALMONE ALLA PIASTRA","166":"SPIEDINI DI SEPPIE",
+  "167":"SPIEDINI DI POLLO","169":"POLLO ALLA PIASTRA","170":"TEMPURA MISTA",
+  "171":"TEMPURA DI GAMBERI","172":"TEMPURA DI VERDURE","173":"EBI FRAI",
+  "174":"CALAMARI FRITTI","175":"POLLO FRITTO","176":"CHELE DI GRANCHIO FRITTE",
+  "177":"COTOLETTA DI MAIALE","178":"POLLO CON MANDORLE","179":"POLLO PICCANTE",
+  "180":"POLLO CON VERDURE","181":"POLLO AL CURRY","182":"POLLO AGRODOLCE",
+  "183":"POLLO CON PATATE","184":"POLLO AL LIMONE","185":"GAMBERI CON VERDURE",
+  "186":"GAMBERI PICCANTE","187":"GAMBERI SALE PEPE","188":"GAMBERI AL LIMONE",
+  "189":"GAMBERI AL CURRY","190":"GAMBERI AGRODOLCE","191":"MANZO CON VERDURE",
+  "192":"MANZO ZENZERO E CIPOLLA","193":"MANZO PICCANTE","194":"SEPPIA PICCANTE",
+  "195":"MAIALE PICCANTE","196":"MAIALE AGRODOLCE","197":"GERMOGLI DI SOIA",
+  "198":"VERDURE MISTE SALTATE","199":"VERDURE CINESI SALTATE",
+  "200":"POLLO CON FUNGHI E BAMBU","201":"GAMBERI CON FUNGHI E BAMBU",
+  "202":"MANZO CON FUNGHI E BAMBU","203":"CAVOLFIORE IN PADELLA","204":"VERZA CINESE IN PADELLA"
+};
 let persons = JSON.parse(localStorage.getItem('ryugin_p') || '[]');
 let current = null, rid = 0;
 let cachedOrders = {};
@@ -416,13 +475,13 @@ function renderSummary(orders) {
   let html = '';
   conf.forEach(p => {
     const items = orders[p]; const tot = items.reduce((s,i)=>s+i.qty,0);
-    html += `<div class="pcard"><div class="pch"><span class="pcn">👤 ${p}</span><span class="pcc">${tot} portata${tot===1?'':'e'}</span></div><div class="pcb">${items.map(i=>`<div class="oi"><span class="oinum">#${i.num}</span><span style="flex:1"></span><span class="oiqty">× ${i.qty}</span></div>`).join('')}</div></div>`;
+    html += `<div class="pcard"><div class="pch"><span class="pcn">👤 ${p}</span><span class="pcc">${tot} portata${tot===1?'':'e'}</span></div><div class="pcb">${items.map(i=>`<div class="oi"><span class="oinum">#${i.num}</span><span class="oiname">${MENU[i.num]||''}</span><span class="oiqty">× ${i.qty}</span></div>`).join('')}</div></div>`;
   });
   const tm = {};
   conf.forEach(p => orders[p].forEach(i => { tm[i.num]=(tm[i.num]||0)+i.qty; }));
   const sk = Object.keys(tm).sort((a,b)=>(parseInt(a)||0)-(parseInt(b)||0));
   const grand = Object.values(tm).reduce((s,v)=>s+v,0);
-  html += `<div class="tcard"><div class="ttitle">📋 Totale cumulativo per piatto</div><div class="ti-grid">${sk.map(n=>`<div class="ti"><span class="tinum">#${n}</span><span style="flex:1"></span><span class="tiqty">${tm[n]}</span></div>`).join('')}</div><div class="grand"><div><div class="glbl">Totale portate</div><div class="gsub">${conf.length} person${conf.length===1?'a':'e'}</div></div><div class="gnum">${grand}</div></div></div>`;
+  html += `<div class="tcard"><div class="ttitle">📋 Totale cumulativo per piatto</div><div class="ti-grid">${sk.map(n=>`<div class="ti"><span class="tinum">#${n}</span><span class="tiname">${MENU[n]||''}</span><span class="tiqty">${tm[n]}</span></div>`).join('')}</div><div class="grand"><div><div class="glbl">Totale portate</div><div class="gsub">${conf.length} person${conf.length===1?'a':'e'}</div></div><div class="gnum">${grand}</div></div></div>`;
   el.innerHTML = html;
 }
 
